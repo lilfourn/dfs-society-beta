@@ -1,0 +1,122 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Projection {
+  projectionId String   @id @unique @map("projection_id")
+  playerName  String   @map("player_name")
+  team        String
+  position    String
+  statType    String   @map("stat_type")
+  lineScore   Float    @map("line_score")
+  average     Float?
+  maxValue    Float?   @map("max_value")
+  gameId      String   @map("game_id")
+  startTime   DateTime @map("start_time")
+  status      String
+  opponent    String?  @map("description")
+  imageUrl    String?  @map("image_url")
+  oddsType    String?  @map("odds_type")
+  
+  // Game odds data
+  homeTeam    String?  @map("home_team")
+  awayTeam    String?  @map("away_team")
+  homeSpread  Float?   @map("home_spread")
+  awaySpread  Float?   @map("away_spread")
+  totalOver   Float?   @map("total_over")
+  totalUnder  Float?   @map("total_under")
+  homeMoneyline String? @map("home_moneyline")
+  awayMoneyline String? @map("away_moneyline")
+  oddsProvider String?  @map("odds_provider")
+  oddsLastUpdated DateTime? @map("odds_last_updated")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("projections")
+}
+
+model NbaPlayer {
+  playerID   String   @id @unique @map("playerID")
+  position   String   @map("pos") 
+  team       String
+  playerName String   @map("longName") 
+  teamID     String   @map("teamID")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  
+  // Relationships
+  gameStats  NbaGameStats[]
+
+  @@map("nba_players")
+}
+
+model NbaGameStats {
+  id                String  @id @default(uuid())
+  gameId            String  @map("gameID")
+  playerId          String  @map("playerID")
+  playerName        String  @map("longName")
+  
+  // Team information
+  team              String
+  teamAbbreviation  String  @map("teamAbv")
+  teamId            String  @map("teamID")
+  
+  // Game information
+  gameDate          DateTime @map("game_date")
+  opponent          String   @map("opponent")
+  isHome            Boolean  @map("is_home")
+  
+  // Basic stats
+  points            Float   @map("pts")
+  rebounds          Float   @map("reb")
+  offensiveRebounds Float   @map("OffReb")
+  defensiveRebounds Float   @map("DefReb")
+  assists           Float   @map("ast")
+  steals            Float   @map("stl")
+  blocks            Float   @map("blk")
+  turnovers         Float   @map("TOV")
+  personalFouls     Float   @map("PF")
+  technicalFouls    Float   @map("tech")
+  plusMinus         String  @map("plusMinus")
+  minutesPlayed     String  @map("mins")
+  
+  // Shooting stats
+  fieldGoalsMade    Float   @map("fgm")
+  fieldGoalsAttempted Float @map("fga")
+  fieldGoalPercentage String @map("fgp")
+  
+  // Three-point stats
+  threePointersMade Float   @map("tptfgm")
+  threePointersAttempted Float @map("tptfga")
+  threePointPercentage String @map("tptfgp")
+  
+  // Free throw stats
+  freeThrowsMade    Float   @map("ftm")
+  freeThrowsAttempted Float @map("fta")
+  freeThrowPercentage String @map("ftp")
+  
+  // Fantasy points
+  fantasyPoints     String  @map("fantasyPoints")
+  
+  // Metadata
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  player            NbaPlayer @relation(fields: [playerId], references: [playerID])
+
+  @@unique([gameId, playerId], name: "gameId_playerId")
+  @@map("nba_game_stats")
+}
